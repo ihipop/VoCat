@@ -908,15 +908,18 @@ func TestOutboundRegistrationStateRequiresRegistrarConfirmation(t *testing.T) {
 	}
 }
 
-func TestRefreshDelayUsesTemporaryTwentyMinuteInterval(t *testing.T) {
-	if got := refreshDelay(40 * time.Minute); got != temporaryRegistrationRefreshInterval {
-		t.Fatalf("refreshDelay() = %s, want %s", got, temporaryRegistrationRefreshInterval)
+func TestRefreshDelayUsesRegistrationLifetime(t *testing.T) {
+	if got, want := refreshDelay(40*time.Minute), 32*time.Minute; got != want {
+		t.Fatalf("refreshDelay() = %s, want %s", got, want)
 	}
-	if got, want := refreshDelay(10*time.Minute), 10*time.Minute-registrationSafetyMargin; got != want {
-		t.Fatalf("refreshDelay() near expiry = %s, want %s", got, want)
+	if got, want := refreshDelay(10*time.Minute), 8*time.Minute; got != want {
+		t.Fatalf("refreshDelay() = %s, want %s", got, want)
 	}
-	if got := refreshDelay(3 * time.Second); got != 100*time.Millisecond {
-		t.Fatalf("refreshDelay() at safety margin = %s, want 100ms", got)
+	if got, want := refreshDelay(3*time.Second), 2400*time.Millisecond; got != want {
+		t.Fatalf("refreshDelay() = %s, want %s", got, want)
+	}
+	if got := refreshDelay(100 * time.Millisecond); got != 100*time.Millisecond {
+		t.Fatalf("refreshDelay() minimum = %s, want 100ms", got)
 	}
 }
 

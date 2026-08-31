@@ -22,21 +22,18 @@ import (
 )
 
 const (
-	defaultSIPPort            = 5060
-	defaultSIPUserAgent       = "vocat/1"
-	imsUserAgentOverrideEnv   = "VOCAT_IMS_DEFAULT_USER_AGENT"
-	defaultRegistrationExpiry = 3600 * time.Second
-	defaultTransactionTimeout = 12 * time.Second
-	defaultRegistrationRetry  = 60 * time.Second
-	maxRegistrationRetry      = 5 * time.Minute
-	registrationSafetyMargin  = 5 * time.Second
-	// Temporary observation setting; restore the expiry-based schedule after
-	// the non-outbound flow behavior has been verified.
-	temporaryRegistrationRefreshInterval = 20 * time.Minute
-	maxAuthenticationChallenges          = 3
-	defaultPANIWLANNode                  = "ffffffffffff"
-	sipFlowRecoveryBase                  = 30 * time.Second
-	sipFlowRecoveryMax                   = 30 * time.Minute
+	defaultSIPPort              = 5060
+	defaultSIPUserAgent         = "vocat/1"
+	imsUserAgentOverrideEnv     = "VOCAT_IMS_DEFAULT_USER_AGENT"
+	defaultRegistrationExpiry   = 3600 * time.Second
+	defaultTransactionTimeout   = 12 * time.Second
+	defaultRegistrationRetry    = 60 * time.Second
+	maxRegistrationRetry        = 5 * time.Minute
+	registrationSafetyMargin    = 5 * time.Second
+	maxAuthenticationChallenges = 3
+	defaultPANIWLANNode         = "ffffffffffff"
+	sipFlowRecoveryBase         = 30 * time.Second
+	sipFlowRecoveryMax          = 30 * time.Minute
 )
 
 var (
@@ -2657,12 +2654,9 @@ func refreshDelay(remaining time.Duration) time.Duration {
 	if remaining <= 0 {
 		return 0
 	}
-	if remaining <= registrationSafetyMargin {
-		return 100 * time.Millisecond
-	}
-	delay := temporaryRegistrationRefreshInterval
-	if delay > remaining-registrationSafetyMargin {
-		delay = remaining - registrationSafetyMargin
+	delay := remaining * 4 / 5
+	if remaining > time.Minute && delay > remaining-30*time.Second {
+		delay = remaining - 30*time.Second
 	}
 	if delay < 100*time.Millisecond {
 		delay = 100 * time.Millisecond
